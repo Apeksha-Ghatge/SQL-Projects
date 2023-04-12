@@ -1,0 +1,48 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+drop table if exists grubplus_membership;
+CREATE TABLE grubplus_membership(user_id integer,grubplus_membership_date date); 
+
+INSERT INTO grubplus_membership(user_id,grubplus_membership_date) 
+ VALUES (1,'2017-09-22'),
+(3,'2017-04-21');
+
+drop table if exists customer;
+CREATE TABLE customer(user_id integer,signup_date date); 
+
+INSERT INTO customer(user_id,signup_date) 
+ VALUES (1,'2014-09-02'),
+(2,'2015-01-15'),
+(3,'2014-04-11');
+
+drop table if exists sales;
+CREATE TABLE sales(user_id integer,created_date date,product_id char(6)); 
+
+INSERT INTO sales(user_id,created_date,product_id) 
+ VALUES (1,'2017-04-19','CB02'),
+(3,'2019-12-18','CN01'),
+(2,'2020-07-20','CF03'),
+(1,'2019-10-23','CB02'),
+(1,'2018-03-19','CF03'),
+(3,'2016-12-20','CB02'),
+(1,'2016-11-09','CN01'),
+(1,'2016-05-20','CF03'),
+(2,'2017-09-24','CN01'),
+(1,'2017-03-11','CB02'),
+(1,'2016-03-11','CN01'),
+(3,'2016-11-10','CN01'),
+(3,'2017-12-07','CB02'),
+(3,'2016-12-15','CB02'),
+(2,'2017-11-08','CB02'),
+(2,'2018-09-10','CF03');
+
+
+drop table if exists product;
+CREATE TABLE product(product_id char(6),product_name text,price integer); 
+
+INSERT INTO product(product_id,product_name,price) 
+ VALUES
+('CN01','chicken nuggets',250),
+('CB02','chicken burger',390),
+('CF03','cheese fingers',270);
