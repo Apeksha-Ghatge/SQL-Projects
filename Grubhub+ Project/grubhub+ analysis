@@ -1,0 +1,115 @@
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+select * from sales;
+select * from product;
+select * from grubplus_membership;
+select * from customer;
+
+# 1) what is total amount each customer spent on grubhub+ ?
+
+select a.user_id,sum(b.price) as total_amt_spent
+ from sales a
+ inner join product b on a.product_id=b.product_id
+group by a.user_id;
+
+# 2) How many days has each customer visited grubhub+?
+
+select user_id,count(distinct created_date) as distinct_days
+from sales 
+group by user_id;
+
+# 3) what was the first product purchased by each customer?
+
+select *
+ from
+(select*,rank() over (partition by user_id order by created_date ) as ranks 
+from sales) a 
+where ranks = 1;
+
+
+# 4) which item was most popular for each customer?
+
+select * from
+(select *,rank() over(partition by user_id order by counts desc) as ranks
+ from
+(select user_id,product_id,count(product_id) as counts from sales group by user_id,product_id) a) b
+where ranks =1;
+
+# 5) which item was purchased first by customer after they become a member ?
+
+select * from
+(select c.*,rank() over (partition by user_id order by created_date ) as ranks
+ from
+(select a.user_id,a.created_date,a.product_id,b.grubplus_membership_date
+ from sales a
+ inner join 
+grubplus_membership b on a.user_id=b.user_id and created_date>=grubplus_membership_date) c) d
+ where ranks =1;
+ 
+ # 6) which item was purchased just before customer became a member?
+
+select * from
+(select c.*,rank() over (partition by user_id order by created_date desc ) as ranks
+ from
+(select a.user_id,a.created_date,a.product_id,b.grubplus_membership_date
+ from sales a 
+ inner join 
+grubplus_membership b on a.user_id=b.user_id and created_date<=grubplus_membership_date) c)d
+ where ranks=1;
+ 
+ # 7) what is total orders and amount spent for each member before they become a member ?
+
+select user_id,count(created_date) as order_purchased,sum(price) as total_amt_spent
+ from
+(select c.*,d.price 
+from
+(select a.user_id,a.created_date,a.product_id,b.grubplus_membership_date 
+from sales a
+ inner join 
+grubplus_membership b on a.user_id=b.user_id and created_date<=grubplus_membership_date) c 
+inner join product d on c.product_id=d.product_id)e
+group by user_id;
+
+# 8) rank all transaction of the customers.
+
+select*,rank() over (partition by user_id order by created_date ) as ranks from sales;
+
+# 9)  if buying each product generate points for eg 5rs=2 grubhub+ point and each product has different purchasing points 
+-- for eg for p1 5rs=1 grubhub+ point,for p2 10rs= grubhub+ point and p3 5rs=1 grubhub+ point  2rs =1 grubhub+ point
+# --calculate points collected by each customers and for which product most points have been given till now.
+
+select user_id,sum(total_points)*2.5 as  total_point_earned from 
+(select e.*,amount/points total_points from 
+(select d.*,case when product_id=1 then 5 when product_id=2 then 2 when product_id=3 then 5 else 0 end as points from 
+(select c.user_id,c.product_id,sum(price) as amount
+ from 
+(select a.*,b.price from sales a 
+inner join product b on a.product_id=b.product_id)c
+group by user_id,product_id)d)e)f
+ group by user_id;
+
+
+select * from
+(select * , rank() over (order by  total_point_earned desc) as ranks from
+(select product_id,sum(total_points) as total_point_earned 
+from 
+(select e.*,amount/points total_points
+ from 
+(select d.*,case when product_id=1 then 5 when product_id=2 then 2 when product_id=3 then 5 else 0 end as points from 
+(select c.user_id,c.product_id,sum(price) as amount
+ from 
+(select a.*,b.price from sales a inner join product b on a.product_id=b.product_id)c
+group by user_id,product_id)d)e)f group by product_id)f)g where ranks=1;
+
+
+
+select e.*,amount/points  as total_points
+from 
+(select d.*,case when product_id=1 then 5 when product_id=2 then 2 when product_id=3 then 5 else 0 end as points from 
+(select c.user_id,c.product_id,sum(price) as amount
+ from 
+(select a.*,b.price from sales a inner join product b on a.product_id=b.product_id)c
+group by user_id,product_id)d)e;
+
+
